@@ -62,9 +62,30 @@ def agregar_libro(titulo: str, autor: str, año: int, genero: str = "Sin clasifi
     
     return f"✅ Libro agregado exitosamente:\n📖 {titulo} - {autor} ({año})\nID: {nuevo_id}"
 
-# Resource: Información detallada de libros
-@mcp.resource("biblioteca://libro/{libro_id}")
-def informacion_libro(libro_id: str) -> str:
+# Resource: Lista de todos los libros
+@mcp.resource("biblioteca://libros")
+def lista_libros() -> str:
+    """Proporciona la lista completa de libros en la biblioteca."""
+    return json.dumps({
+        "biblioteca": {
+            "total_libros": len(libros_db),
+            "libros": list(libros_db.values())
+        }
+    }, indent=2, ensure_ascii=False)
+
+# Resources: Información detallada de cada libro específico
+@mcp.resource("biblioteca://libro/1")
+def libro_1() -> str:
+    """Información del libro: Cien años de soledad."""
+    return informacion_libro_por_id("1")
+
+@mcp.resource("biblioteca://libro/2") 
+def libro_2() -> str:
+    """Información del libro: Don Quijote de la Mancha."""
+    return informacion_libro_por_id("2")
+
+# Función auxiliar para obtener información de libro por ID
+def informacion_libro_por_id(libro_id: str) -> str:
     """Proporciona información detallada de un libro específico."""
     if libro_id in libros_db:
         libro = libros_db[libro_id]
@@ -87,22 +108,21 @@ def generar_reseña(libro_id: str) -> str:
     if libro_id in libros_db:
         libro = libros_db[libro_id]
         return f"""Eres un crítico literario experto. Escribe una reseña profesional y detallada del libro:
+            Título: {libro['titulo']}
+            Autor: {libro['autor']}
+            Año de publicación: {libro['año']}
+            Género: {libro['genero']}
 
-Título: {libro['titulo']}
-Autor: {libro['autor']}
-Año de publicación: {libro['año']}
-Género: {libro['genero']}
+            Descripción: {libro['descripcion']}
 
-Descripción: {libro['descripcion']}
+            Por favor, incluye en tu reseña:
+            1. Un análisis del estilo narrativo
+            2. Los temas principales de la obra
+            3. El contexto histórico y cultural
+            4. Tu opinión crítica sobre la relevancia de la obra
+            5. Una calificación del 1 al 10
 
-Por favor, incluye en tu reseña:
-1. Un análisis del estilo narrativo
-2. Los temas principales de la obra
-3. El contexto histórico y cultural
-4. Tu opinión crítica sobre la relevancia de la obra
-5. Una calificación del 1 al 10
-
-Mantén un tono académico pero accesible."""
+            Mantén un tono académico pero accesible."""
     else:
         return f"Error: No se puede generar reseña para el libro ID {libro_id} - libro no encontrado."
 
